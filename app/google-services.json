@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "932382020021",
+    "project_id": "proyectopas-3b39d",
+    "storage_bucket": "proyectopas-3b39d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:932382020021:android:e3baba54e35e774ecfc9fc",
+        "android_client_info": {
+          "package_name": "com.example.proyecto_pas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcjCHBTggDz1jR7sLya6HG3O2br7FQmhA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

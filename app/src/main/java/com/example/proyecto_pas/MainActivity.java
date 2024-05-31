@@ -1,6 +1,9 @@
 package com.example.proyecto_pas;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -11,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.proyecto_pas.Interfaz.JsonPlaceholderApi;
 import com.example.proyecto_pas.Model.Entrada;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
@@ -22,6 +26,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     List<Entrada> entradaList; //Aqui se guardan todas las estaciones de carga
+
+    Button btn_exit;
+
+    FirebaseAuth mAuth;
     private TextView mJsonTextView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +44,19 @@ public class MainActivity extends AppCompatActivity {
 
         mJsonTextView = findViewById(R.id.jsonText);
         getPosts();
+
+        mAuth = FirebaseAuth.getInstance();
+
+        btn_exit = findViewById(R.id.exitButton);
+
+        btn_exit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAuth.signOut();
+                finish();
+                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            }
+        });
 
     }
 
@@ -82,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
 
 }
