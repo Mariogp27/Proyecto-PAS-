@@ -42,7 +42,7 @@ public class UploadActivity extends AppCompatActivity {
         textView = findViewById(R.id.textView);
         textView2 = findViewById(R.id.textView2);
 
-        rootDatabaseref = FirebaseDatabase.getInstance("https://testfirebase-b0b60-default-rtdb.europe-west1.firebasedatabase.app/")
+        rootDatabaseref = FirebaseDatabase.getInstance("https://proyectopas-3b39d-default-rtdb.europe-west1.firebasedatabase.app/")
                 .getReference().child("Users");
 
         readButton.setOnClickListener(new View.OnClickListener() {

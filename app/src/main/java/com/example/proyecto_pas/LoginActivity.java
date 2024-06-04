@@ -42,7 +42,7 @@ public class LoginActivity extends AppCompatActivity {
                 String emailUser = email.getText().toString().trim();
                 String passUser = password.getText().toString().trim();
 
-                if(emailUser.isEmpty() && passUser.isEmpty()){
+                if(emailUser.isEmpty() || passUser.isEmpty()){
                     Toast.makeText(LoginActivity.this, "Complete los datos", Toast.LENGTH_SHORT).show();
                 }else{
                     loginUser(emailUser,passUser);
@@ -72,7 +72,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
                     finish();
-                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    startActivity(new Intent(LoginActivity.this, MainActivityPablo.class));
                     Toast.makeText(LoginActivity.this, "Registro completado", Toast.LENGTH_SHORT).show();
                 }else{
                     Toast.makeText(LoginActivity.this, "Error", Toast.LENGTH_SHORT).show();
@@ -92,7 +92,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
                     finish();
-                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    startActivity(new Intent(LoginActivity.this, MainActivityPablo.class));
                     Toast.makeText(LoginActivity.this, "Bienvenido", Toast.LENGTH_SHORT).show();
                 }else{
                     Toast.makeText(LoginActivity.this, "Error", Toast.LENGTH_SHORT).show();
@@ -111,7 +111,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onStart();
         FirebaseUser user = mAuth.getCurrentUser();
         if(user != null){
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            startActivity(new Intent(LoginActivity.this, MainActivityPablo.class));
             finish();
         }
     }
