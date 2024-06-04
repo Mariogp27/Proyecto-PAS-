@@ -1,9 +1,12 @@
 package com.example.proyecto_pas;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -26,6 +29,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +42,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
     public List<Entrada> entradaList; //Aqui se guardan todas las estaciones de carga
-    List<Entrada> entradaList_diez;
     EditText txtLatitud, txtLongitud;
     GoogleMap mMap;
+    Button btn_exit;
+    FirebaseAuth mAuth;
     private TextView mJsonTextView;
-
     LatLng myPosicion;
-
     private FusedLocationProviderClient mFusedLocationClient;
 
     @Override
@@ -61,6 +64,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mJsonTextView = findViewById(R.id.jsonText);
         txtLatitud = findViewById(R.id.txtLatitud);
         txtLongitud = findViewById(R.id.txtLongitud);
+        btn_exit = findViewById(R.id.exitButton);
+        
+        mAuth = FirebaseAuth.getInstance();        
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient((this));
 
@@ -70,9 +76,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //Hacer llamada de la API
         getPosts();
-
-
-
+        
+        btn_exit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAuth.signOut();
+                finish();
+                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            }
+        });
     }
 
     private void getPosts() {
@@ -97,16 +109,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
 
                 entradaList = response.body();
-
-                /*String content = "";
-                content += "datasetid:" + entrada.getDatasetid() + "\n";
-                content += "recordid:" + entrada.getRecordid() + "\n";
-                content += "dms:" + entrada.getFields().getDms() + "\n";
-                content += "tipo:" + entrada.getFields().getDms() + "\n";
-                content += "dd1:" + entrada.getFields().getDd().get(0) + "\n";
-                content += "dd2:" + entrada.getFields().getDd().get(1) + "\n\n";
-                mJsonTextView.append(content);*/
-
             }
 
             @Override
@@ -117,8 +119,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
     }
-
-
+    
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
@@ -211,4 +212,5 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         return entradasRango;
     }
+
 }
