@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     GoogleMap mMap;
     private TextView mJsonTextView;
 
+    LatLng myPosicion;
+
     private FusedLocationProviderClient mFusedLocationClient;
 
     @Override
@@ -68,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //Hacer llamada de la API
         getPosts();
+
+
 
     }
 
@@ -135,18 +139,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         if(location!=null){
                             //Sacamos latitud y longitud
                             Log.e("Location","Latitude: "+location.getLatitude()+"\n Longitud: "+location.getLongitude());
-                            LatLng myPosicion = new LatLng(location.getLatitude(), location.getLongitude());
+                            myPosicion = new LatLng(location.getLatitude(), location.getLongitude());
                             mMap.moveCamera(CameraUpdateFactory.newLatLng(myPosicion));
                         }
                     }
                 });
-
-        //Crea una posicion
-        //LatLng castillaleon = new LatLng(41.631830, -4.746748);
-        //Añade un marcador a la posición
-        //mMap.addMarker(new MarkerOptions().position(castillaleon).title("Castilla y Leon"));
-        //Actualiza el mapa hasta la posicion
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(castillaleon));
 
     }
 
@@ -162,19 +159,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         txtLatitud.setText(""+latLng.latitude);
         txtLongitud.setText(""+latLng.longitude);
 
-        for(Entrada entrada: entradaList){
+        List<Entrada> entradasMostrar = new ArrayList<Entrada>();
 
-            LatLng posicionNew = new LatLng(entrada.getFields().getDd().get(0), entrada.getFields().getDd().get(1));
-            mMap.addMarker(new MarkerOptions().position(posicionNew).title(entrada.getFields().getNombre()));
-            //mMap.moveCamera(CameraUpdateFactory.newLatLng(posicionNew));
+        entradasMostrar = calcularEstacionesCercanas(100.0);
+
+        if(entradasMostrar != null){
+            mMap.clear();
+
+            for (Entrada entrada : entradasMostrar) {
+                LatLng posicionNew = new LatLng(entrada.getFields().getDd().get(0), entrada.getFields().getDd().get(1));
+                mMap.addMarker(new MarkerOptions().position(posicionNew).title(entrada.getFields().getNombre()).snippet(entrada.getFields().getOperador()));
+                //mMap.moveCamera(CameraUpdateFactory.newLatLng(posicionNew));
+            }
         }
-
-        //mMap.clear();
-        //LatLng castillaLeon = new LatLng(latLng.latitude, latLng.longitude);
-        //Añadir un marcador
-        //mMap.addMarker((new MarkerOptions().position(castillaLeon).title("")));
-        //Centrar la camara al objetivo
-        // mMap.moveCamera(CameraUpdateFactory.newLatLng(castillaLeon));
 
     }
 
@@ -198,8 +195,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         return radioTierra*c;
     }
-    public void calcularEstacionesCercanas(Float rango){
+    public List<Entrada> calcularEstacionesCercanas(double rango){
 
-        return;
+        List<Entrada> entradasRango = new ArrayList<Entrada>();
+
+        for(Entrada entrada: entradaList){
+            double lat2 = entrada.getFields().getDd().get(0);
+            double lon2 = entrada.getFields().getDd().get(1);
+
+            double dist = distanciaKmEntreCoordenadas(myPosicion.latitude, myPosicion.longitude, lat2, lon2);
+
+            if(Math.abs(dist) < rango){
+                entradasRango.add(entrada);
+            }
+        }
+        return entradasRango;
     }
 }
