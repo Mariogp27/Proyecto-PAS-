@@ -7,7 +7,7 @@ public class Fields {
     private String tipo;
     private String operador;
     private String direccion;
-    private List<Float> dd;
+    private List<Double> dd;
     private String no;
     private String nombre;
 
@@ -27,7 +27,7 @@ public class Fields {
         return direccion;
     }
 
-    public List<Float> getDd() {
+    public List<Double> getDd() {
         return dd;
     }
 
