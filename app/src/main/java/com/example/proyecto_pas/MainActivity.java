@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -42,11 +43,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
     public List<Entrada> entradaList; //Aqui se guardan todas las estaciones de carga
-    EditText txtLatitud, txtLongitud;
+    EditText txtRango;
     GoogleMap mMap;
     Button btn_exit;
+    Button btn_apply;
     FirebaseAuth mAuth;
-    private TextView mJsonTextView;
     LatLng myPosicion;
     private FusedLocationProviderClient mFusedLocationClient;
 
@@ -61,10 +62,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return insets;
         });
 
-        mJsonTextView = findViewById(R.id.jsonText);
-        txtLatitud = findViewById(R.id.txtLatitud);
-        txtLongitud = findViewById(R.id.txtLongitud);
+        txtRango = findViewById(R.id.editTextNumberDecimal);
         btn_exit = findViewById(R.id.exitButton);
+        btn_apply = findViewById(R.id.applyButton);
         
         mAuth = FirebaseAuth.getInstance();        
 
@@ -83,6 +83,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mAuth.signOut();
                 finish();
                 startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            }
+        });
+
+        btn_apply.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(txtRango.getText().toString() != null && !txtRango.getText().toString().isEmpty()){
+                    double rango = Double.parseDouble(txtRango.getText().toString());
+
+                    if (rango > 0){
+                        mostrarEstacionesEnRango(rango);
+                    }
+                    else {
+                        Toast.makeText(MainActivity.this, "Introduzca un rango válido", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
             }
         });
     }
@@ -104,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //Aqui se maneja la respuesta cuando ha ido bien
                 if (!response.isSuccessful()) {
                     //Cuando haya problema con la conexion a la API
-                    mJsonTextView.setText("Codigo: " + response.code());//Con el codigo de respuesta se puede saber que ha ocurrido
+                    Toast.makeText(MainActivity.this, "Codigo Error: "+ response.code(), Toast.LENGTH_SHORT).show();//Con el codigo de respuesta se puede saber que ha ocurrido
                     return;
                 }
 
@@ -114,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onFailure(Call<List<Entrada>> call, Throwable throwable) {
                 //Aqui se manejan los errores fatales que provocan un throwable
-                mJsonTextView.setText(throwable.getMessage()); //Mostramos el mensaje del throwable
+                Toast.makeText(MainActivity.this,throwable.getMessage(), Toast.LENGTH_LONG).show();//Mostramos el mensaje del throwable
 
             }
         });
@@ -150,29 +167,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapClick(@NonNull LatLng latLng) {
-        txtLatitud.setText(""+latLng.latitude);
-        txtLongitud.setText(""+latLng.longitude);
     }
 
     @Override
     public void onMapLongClick(@NonNull LatLng latLng) {
         //Se genera un evento al mantener pulsado el mapa
-        txtLatitud.setText(""+latLng.latitude);
-        txtLongitud.setText(""+latLng.longitude);
-
-        List<Entrada> entradasMostrar = new ArrayList<Entrada>();
-
-        entradasMostrar = calcularEstacionesCercanas(100.0);
-
-        if(entradasMostrar != null){
-            mMap.clear();
-
-            for (Entrada entrada : entradasMostrar) {
-                LatLng posicionNew = new LatLng(entrada.getFields().getDd().get(0), entrada.getFields().getDd().get(1));
-                mMap.addMarker(new MarkerOptions().position(posicionNew).title(entrada.getFields().getNombre()).snippet(entrada.getFields().getOperador()));
-                //mMap.moveCamera(CameraUpdateFactory.newLatLng(posicionNew));
-            }
-        }
 
     }
 
@@ -211,6 +210,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
         return entradasRango;
+    }
+
+    public void mostrarEstacionesEnRango(double rango){
+        List<Entrada> entradasMostrar = new ArrayList<Entrada>();
+
+        entradasMostrar = calcularEstacionesCercanas(rango);
+
+        if(entradasMostrar != null){
+            mMap.clear();
+
+            for (Entrada entrada : entradasMostrar) {
+                LatLng posicionNew = new LatLng(entrada.getFields().getDd().get(0), entrada.getFields().getDd().get(1));
+                mMap.addMarker(new MarkerOptions().position(posicionNew).title(entrada.getFields().getNombre()).snippet(entrada.getFields().getOperador()));
+            }
+        }
     }
 
 }
