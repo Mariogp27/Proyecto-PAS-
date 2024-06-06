@@ -43,7 +43,7 @@ public class UploadActivity extends AppCompatActivity {
         textView2 = findViewById(R.id.textView2);
 
         rootDatabaseref = FirebaseDatabase.getInstance("https://proyectopas-3b39d-default-rtdb.europe-west1.firebasedatabase.app/")
-                .getReference().child("Users");
+                .getReference().child("Location");
 
         readButton.setOnClickListener(new View.OnClickListener() {
             @Override

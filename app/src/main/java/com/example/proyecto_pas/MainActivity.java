@@ -29,10 +29,14 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import retrofit2.Call;
@@ -49,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Button btn_apply;
     FirebaseAuth mAuth;
     LatLng myPosicion;
+    DatabaseReference rootDatabaseref;
     private FusedLocationProviderClient mFusedLocationClient;
 
     @Override
@@ -69,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mAuth = FirebaseAuth.getInstance();        
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient((this));
+
+        rootDatabaseref = FirebaseDatabase.getInstance("https://proyectopas-3b39d-default-rtdb.europe-west1.firebasedatabase.app/")
+                .getReference();
 
         //Cargar mapa
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -150,11 +158,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.setMyLocationEnabled(true);
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
+
         mFusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
                     public void onSuccess(Location location) {
                         if(location!=null){
+
+                            HashMap hashMap = new HashMap();
+                            hashMap.put("ID", location.getLatitude());
+                            hashMap.put("Name", location.getLongitude());
+
+                            rootDatabaseref.child("Location").setValue(hashMap);
+
                             //Sacamos latitud y longitud
                             Log.e("Location","Latitude: "+location.getLatitude()+"\n Longitud: "+location.getLongitude());
                             myPosicion = new LatLng(location.getLatitude(), location.getLongitude());
