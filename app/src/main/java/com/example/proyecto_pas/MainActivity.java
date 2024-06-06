@@ -32,12 +32,16 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -53,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Button btn_apply;
     FirebaseAuth mAuth;
     LatLng myPosicion;
+
+    Double latitude;
+    Double longitude;
     DatabaseReference rootDatabaseref;
     private FusedLocationProviderClient mFusedLocationClient;
 
@@ -70,8 +77,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         txtRango = findViewById(R.id.editTextNumberDecimal);
         btn_exit = findViewById(R.id.exitButton);
         btn_apply = findViewById(R.id.applyButton);
-        
-        mAuth = FirebaseAuth.getInstance();        
+
+        mAuth = FirebaseAuth.getInstance();
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient((this));
 
@@ -84,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //Hacer llamada de la API
         getPosts();
-        
+
         btn_exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -97,13 +104,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         btn_apply.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(txtRango.getText().toString() != null && !txtRango.getText().toString().isEmpty()){
+                if (txtRango.getText().toString() != null && !txtRango.getText().toString().isEmpty()) {
                     double rango = Double.parseDouble(txtRango.getText().toString());
 
-                    if (rango > 0){
+                    if (rango > 0) {
                         mostrarEstacionesEnRango(rango);
-                    }
-                    else {
+                    } else {
                         Toast.makeText(MainActivity.this, "Introduzca un rango válido", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -129,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //Aqui se maneja la respuesta cuando ha ido bien
                 if (!response.isSuccessful()) {
                     //Cuando haya problema con la conexion a la API
-                    Toast.makeText(MainActivity.this, "Codigo Error: "+ response.code(), Toast.LENGTH_SHORT).show();//Con el codigo de respuesta se puede saber que ha ocurrido
+                    Toast.makeText(MainActivity.this, "Codigo Error: " + response.code(), Toast.LENGTH_SHORT).show();//Con el codigo de respuesta se puede saber que ha ocurrido
                     return;
                 }
 
@@ -139,12 +145,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onFailure(Call<List<Entrada>> call, Throwable throwable) {
                 //Aqui se manejan los errores fatales que provocan un throwable
-                Toast.makeText(MainActivity.this,throwable.getMessage(), Toast.LENGTH_LONG).show();//Mostramos el mensaje del throwable
+                Toast.makeText(MainActivity.this, throwable.getMessage(), Toast.LENGTH_LONG).show();//Mostramos el mensaje del throwable
 
             }
         });
     }
-    
+
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
@@ -163,18 +169,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
                     public void onSuccess(Location location) {
-                        if(location!=null){
-
-                            HashMap hashMap = new HashMap();
-                            hashMap.put("ID", location.getLatitude());
-                            hashMap.put("Name", location.getLongitude());
-
-                            rootDatabaseref.child("Location").setValue(hashMap);
+                        if (location != null) {
 
                             //Sacamos latitud y longitud
-                            Log.e("Location","Latitude: "+location.getLatitude()+"\n Longitud: "+location.getLongitude());
-                            myPosicion = new LatLng(location.getLatitude(), location.getLongitude());
+                            latitude = location.getLatitude();
+                            longitude = location.getLongitude();
+                            myPosicion = new LatLng(latitude, longitude);
                             mMap.moveCamera(CameraUpdateFactory.newLatLng(myPosicion));
+
+                            HashMap hashMap = new HashMap();
+                            hashMap.put("Latitude", latitude);
+                            hashMap.put("Longitude", longitude);
+
+                            rootDatabaseref.child("Location").updateChildren(hashMap);
                         }
                     }
                 });
@@ -191,35 +198,55 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    public double gradosARadianes(double grados){
-        return (grados*(Math.PI/180));
+    public double gradosARadianes(double grados) {
+        return (grados * (Math.PI / 180));
     }
-    public double distanciaKmEntreCoordenadas(double latA,double lonA,double latB,double lonB){
+
+    public double distanciaKmEntreCoordenadas(double latA, double lonA, double latB, double lonB) {
         //calcular la distancia en Km entre dos coordenadas
 
         float radioTierra = 6371;
 
-        double dLat= gradosARadianes(latB - latA);
-        double dLon= gradosARadianes(lonB - lonA);
+        double dLat = gradosARadianes(latB - latA);
+        double dLon = gradosARadianes(lonB - lonA);
 
         latA = gradosARadianes(latA);
         latB = gradosARadianes(latB);
 
-        double a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.sin(dLon/2)*Math.sin(dLon/2)*Math.cos(latA)*Math.cos(latB);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(latA) * Math.cos(latB);
 
-        double c = 2* Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        return radioTierra*c;
+        return radioTierra * c;
     }
-    public List<Entrada> calcularEstacionesCercanas(double rango){
+
+    public List<Entrada> calcularEstacionesCercanas(double rango) {
 
         List<Entrada> entradasRango = new ArrayList<Entrada>();
+
+        rootDatabaseref.child("Location").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists()){
+                    Map<Double,Double> map = (Map<Double, Double>) snapshot.getValue();
+
+                    latitude = map.get("Latitude");
+                    longitude = map.get("Longitude");
+
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
 
         for(Entrada entrada: entradaList){
             double lat2 = entrada.getFields().getDd().get(0);
             double lon2 = entrada.getFields().getDd().get(1);
 
-            double dist = distanciaKmEntreCoordenadas(myPosicion.latitude, myPosicion.longitude, lat2, lon2);
+            double dist = distanciaKmEntreCoordenadas(latitude, longitude, lat2, lon2);
 
             if(Math.abs(dist) < rango){
                 entradasRango.add(entrada);
