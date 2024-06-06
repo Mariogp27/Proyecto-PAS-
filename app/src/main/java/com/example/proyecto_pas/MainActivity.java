@@ -195,7 +195,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapLongClick(@NonNull LatLng latLng) {
         //Se genera un evento al mantener pulsado el mapa
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
 
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location != null) {
+
+                            //Sacamos latitud y longitud
+                            latitude = location.getLatitude();
+                            longitude = location.getLongitude();
+                            myPosicion = new LatLng(latitude, longitude);
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(myPosicion));
+
+                            HashMap hashMap = new HashMap();
+                            hashMap.put("Latitude", latitude);
+                            hashMap.put("Longitude", longitude);
+
+                            rootDatabaseref.child("Location").updateChildren(hashMap);
+                        }
+                    }
+                });
     }
 
     public double gradosARadianes(double grados) {
