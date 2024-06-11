@@ -49,12 +49,11 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     public List<Entrada> entradaList; //Aqui se guardan todas las estaciones de carga
     EditText txtRango;
     GoogleMap mMap;
-    Button btn_exit;
-    Button btn_apply;
+    Button btn_exit, btn_apply, btn_update;
     FirebaseAuth mAuth;
     LatLng myPosicion;
 
@@ -77,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         txtRango = findViewById(R.id.editTextNumberDecimal);
         btn_exit = findViewById(R.id.exitButton);
         btn_apply = findViewById(R.id.applyButton);
+        btn_update = findViewById(R.id.updateButton);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -118,6 +118,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
         });
+
+        btn_update.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                actualizarLocalizacion();
+
+            }
+        });
     }
 
     private void getPosts() {
@@ -156,8 +164,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
-        this.mMap.setOnMapClickListener(this);
-        this.mMap.setOnMapLongClickListener(this);
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -190,12 +196,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    @Override
-    public void onMapClick(@NonNull LatLng latLng) {
-    }
-
-    @Override
-    public void onMapLongClick(@NonNull LatLng latLng) {
+    public void actualizarLocalizacion()
+    {
         //Se genera un evento al mantener pulsado el mapa
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -223,7 +225,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 });
     }
-
     public double gradosARadianes(double grados) {
         return (grados * (Math.PI / 180));
     }
