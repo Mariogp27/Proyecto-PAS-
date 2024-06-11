@@ -112,6 +112,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     } else {
                         Toast.makeText(MainActivity.this, "Introduzca un rango válido", Toast.LENGTH_SHORT).show();
                     }
+                }else {
+                    Toast.makeText(MainActivity.this, "No ha escrito nigún rango", Toast.LENGTH_LONG).show();
                 }
 
             }
@@ -164,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.setMyLocationEnabled(true);
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
-
+        //Recoger la localización del dispositivo.
         mFusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
@@ -199,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-
+        //Enviar la localización a la base de datos
         mFusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
@@ -248,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         List<Entrada> entradasRango = new ArrayList<Entrada>();
 
+        //Extraer localización de base de datos
         rootDatabaseref.child("Location").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -265,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-
+        //Comprobar distancia de cada entrada
         for(Entrada entrada: entradaList){
             double lat2 = entrada.getFields().getDd().get(0);
             double lon2 = entrada.getFields().getDd().get(1);
